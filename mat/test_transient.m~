@@ -1,2 +1,0 @@
-xx= load('data1.txt');
-x1=plot(xx)
