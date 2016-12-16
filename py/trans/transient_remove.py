@@ -18,26 +18,20 @@ def readInputFile(filePath):
          arr=[float(a) for a in line.split(',')]
  #        retVal.append(file.readline())
          retVal.append(arr)
-    return retVal
+    return retVal[0]
 
 def transient_removal(x=[]):
-    x = readInputFile(data2FilePath)
-#    x = np.loadtxt(data1FilePath)
-    
-    x = np.array(x)
-    N = x.shape[1]
-    y=[] 
-    for kk in np.arange(np.floor(N/2)):
-        v = np.var(x[kk+1:])*1.0/(N-kk)
-        y.append(v)
-    y = np.array(y)
-    ind = y.min(axis=0)
+    N = len(x)
+    k = np.int_([N/2])
+    y = np.zeros((k, 1))
+    for kk in np.arange(k):
+        y[kk] = np.var(x[kk+1:])*1.0/(N-kk-1.0)
+    y = np.array(-y)
+    ind = y.argmax(0)
     print('index of transient point in the signal:')
     print(ind)
     return ind
 
-
-x = readInputFile(data2FilePath)
-print(x)
-index = transient_removal()
-#print 
+x = readInputFile(data1FilePath)
+x = x[:10000]
+index = transient_removal(x)
