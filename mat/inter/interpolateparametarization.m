@@ -1,6 +1,7 @@
 function inter_par= interpolateparametarization(xi1,yi1,inter_method,interpolate_index)
 % keyboard
 global xi yi y0 w 
+y0=0.1
 xi=xi1; yi=yi1;
 n=size(xi,1);
 % keyboard
@@ -23,7 +24,7 @@ end
 
 % new 
 if inter_method == 7 || inter_method == 8
- keyboard
+%  keyboard
 a = ones(size(xi,1),1);
 lambda = 1;
 % keyboard
@@ -108,7 +109,7 @@ inter_par{1}=7;
 %%%%%%%%%%%%%
 end
 %
-function inter_par= tabehSP_SCALED(xi1,yi1,a, inter_method,lambda,interpolate_index)
+function inter_par= interpolateparametarization_scaled(xi1,yi1,a, inter_method,lambda,interpolate_index)
 global xi yi y0 w 
 H= diag(a);
 if nargin < 4
