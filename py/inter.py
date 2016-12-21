@@ -121,12 +121,39 @@ class Inter:
     # %%%%%%%%%%%%%
     # end
     # %
-    def interpolateparametarization_scaled(self, xi1,yi1,a, inter_method,lamda,interpolate_index):
+    
+    
+    
+    
+    #    def interpolateparametarization_scaled(self, xi1,yi1,a, inter_method,lamda,interpolate_index):
+    def parameterization_scaled(self,xi, yi, a, inter_method,lamda, interpolate_index):
         w = self.w
-    
-    
-    
-    
+        n = xi.shape[0]
+        m = xi.shape[1]
+        if self.method =='NPS':
+            A= np.zeros(shape=(m,m))
+            
+            for ii in range(0,m,1): # for ii =0 to m-1 with step 1; range(1,N,1)
+                for jj in range(0,m,1):
+                    A[ii,jj] = (np.dot(xi[:,ii] - xi[:,jj],xi[:,ii] - xi[:,jj]))**(3.0/2.0)
+                #         dA(ii,jj,:) =3/2.* (xi(:,ii) - xi(:,jj)).^2 *  ((xi(:,ii) - xi(:,jj))' *H* (xi(:,ii) - xi(:,jj)))^(1/2)
+            
+            V = np.concatenate((np.ones((1,m)), xi), axis=0)
+            A1 = np.concatenate((A, np.transpose(V)),axis=1)
+            A2 = np.concatenate((V, np.zeros(shape=(n+1,n+1) )), axis=1)
+            yi = yi[np.newaxis,:]
+            
+            print(yi.shape)
+            b = np.concatenate([np.transpose(yi), np.zeros(shape=(n+1,1))])
+            #      b = np.concatenate((np.transpose(yi), np.zeros(shape=(n+1,1) )), axis=0)
+            A = np.concatenate((A1,A2), axis=0)
+            wv = np.linalg.solve(A,b)
+            self.w = wv[:m]
+            self.v = wv[m:]
+            self.xi = xi
+
+
+
     # function inter_par= interpolateparametarization_scaled(xi1,yi1,a, inter_method,lambda,interpolate_index)
     # global xi yi y0 w
     # H= diag(a);
