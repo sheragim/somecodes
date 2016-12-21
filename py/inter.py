@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import minimize, rosen, rosen_der
+# from scipy.optimize import minimize, rosen, rosen_der
 #from __future__ import print_function    # (at top of module)
 
 
@@ -11,6 +11,7 @@ class Inter:
         self.w = 0
         self.v = 0
         self.xi = 0
+        self.yi=0
         self.lamda = 0
     
     
@@ -19,7 +20,6 @@ class Inter:
         m = xi.shape[1]
         if self.method =='NPS':
             A= np.zeros(shape=(m,m))
-            
             for ii in range(0,m,1): # for ii =0 to m-1 with step 1; range(1,N,1)
                 for jj in range(0,m,1):
                     A[ii,jj] = (np.dot(xi[:,ii] - xi[:,jj],xi[:,ii] - xi[:,jj]))**(3.0/2.0)
@@ -101,8 +101,20 @@ class Inter:
         return inter_par,a
     
     
-    def DiagonalScaleCost( self, a, xi, yi):
-        print('hi')
+    def DiagonalScaleCost( self, a):
+        xi = self.xi
+        yi = self.yi
+        w = self.w
+        #         inter_par= interpolateparametarization_scaled(xi,yi,a,1, lamda)
+        w = self.w # ????????
+        cost = np.sum(w**2) # ????  Cost =sum(w.^2);
+        return cost
+    def DiagonalScaleCost_der( self, a):
+        w = self.w
+        Dw = self.Dw
+        gradCost =2*Dw*w;
+        return gradCost
+    
     # function [ Cost, gradCost, inter_par ] = DiagonalScaleCost( a, xi, yi)
     # %The Loss (cost) function that  how smooth the interpolating funciton is.
     # global lambda
@@ -136,7 +148,7 @@ class Inter:
             for ii in range(0,m,1): # for ii =0 to m-1 with step 1; range(1,N,1)
                 for jj in range(0,m,1):
                     A[ii,jj] = (np.dot(xi[:,ii] - xi[:,jj],xi[:,ii] - xi[:,jj]))**(3.0/2.0)
-                #         dA(ii,jj,:) =3/2.* (xi(:,ii) - xi(:,jj)).^2 *  ((xi(:,ii) - xi(:,jj))' *H* (xi(:,ii) - xi(:,jj)))^(1/2)
+                    dA[ii,jj,:] =3/2.* (xi[:,ii] - xi[:,jj])**2 *  ((np.transpose(xi[:,ii]-xi[:,jj]))*H*(xi[:,ii] - xi[:,jj]))**(1/2.0)
             
             V = np.concatenate((np.ones((1,m)), xi), axis=0)
             A1 = np.concatenate((A, np.transpose(V)),axis=1)
@@ -151,9 +163,7 @@ class Inter:
             self.w = wv[:m]
             self.v = wv[m:]
             self.xi = xi
-
-
-
+    
     # function inter_par= interpolateparametarization_scaled(xi1,yi1,a, inter_method,lambda,interpolate_index)
     # global xi yi y0 w
     # H= diag(a);
