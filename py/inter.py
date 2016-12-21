@@ -6,13 +6,14 @@ import numpy as np
 class Inter:
     #    'Common base class for all variable'
     
-    def __init__(self,inter_method):
+    def __init__(self,inter_method, y0=0.):
         self.method = inter_method
         self.w = 0
         self.v = 0
         self.xi = 0
         self.yi=0
         self.lamda = 0
+        self.y0 = y0
     
     
     def parameterization(self,xi, yi):
@@ -48,12 +49,13 @@ class Inter:
                 lamda = lamda/2.0
                 for jj in range(yi.shape[0]):
                     
-                    #     %    [inter_par, a]  = Scale_interpar( xi,yi,a0, lambda); % method1
-                    [inter_par,a]  = Scale_interpar( xi,yi,a, lamda); #method2
+                    [inter_par,a]  = Scale_interpar( xi,yi,a, lamda); #method2 %%% DO I NEED TO INCLUDE SELF INPUT????
+    
+    
     # inter_par{1}=inter_method;
     # lambda = lambda/2;
     #for jj=1:numel(yi)
-    # ygps(jj)= interpolate_val(xi(:,jj),inter_par);
+    # ygps(jj)= interpolate_val(xi(:,jj),inter_par); % HERE --->
     # % equation 19 in MAPS
     # deltaPx  = abs(ygps(jj)-yi(jj));
     # DeltaFun = abs(yi(jj)-y0);
@@ -70,7 +72,9 @@ class Inter:
     # inter_par{8}=epsFun;
     # end
     
-    # Scaled Polyharmonic Spline
+    
+    ###########################IMPORTANT ##################################################
+    # Scaled
     def Scale_interpar(self, xi,yi,a0, lamda0):
         #This function is for spinterpolation and finds the scaling factor for
         #polyharmonic spline interpolation
@@ -101,6 +105,7 @@ class Inter:
         return inter_par,a
     
     
+    ###########################IMPORTANT ##################################################
     def DiagonalScaleCost( self, a):
         xi = self.xi
         yi = self.yi
@@ -151,15 +156,29 @@ class Inter:
                     dA[ii,jj,:] =3/2.* (xi[:,ii] - xi[:,jj])**2 *  ((np.transpose(xi[:,ii]-xi[:,jj]))*H*(xi[:,ii] - xi[:,jj]))**(1/2.0)
             
             V = np.concatenate((np.ones((1,m)), xi), axis=0)
+            A = A + np.identity(m)*lamda
+            
             A1 = np.concatenate((A, np.transpose(V)),axis=1)
             A2 = np.concatenate((V, np.zeros(shape=(n+1,n+1) )), axis=1)
             yi = yi[np.newaxis,:]
             
-            print(yi.shape)
+            
             b = np.concatenate([np.transpose(yi), np.zeros(shape=(n+1,1))])
             #      b = np.concatenate((np.transpose(yi), np.zeros(shape=(n+1,1) )), axis=0)
             A = np.concatenate((A1,A2), axis=0)
             wv = np.linalg.solve(A,b)
+            
+            # calculating the gradient
+            Dw = []; Dv=[]
+            for kk in range(n):
+                #                 b{kk} = -[dA(:,:,kk) zeros(size(V'));zeros(size(V)) zeros(n+1,n+1)]*wv; ???
+                Dwv = np.linalg.solve(A, b{kk} )  # Dwv = pinv(A)* b{kk}; % solve the associated linear system
+            # Dw = [Dw; Dwv(1:N)']; ????
+            # Dv = [Dv; Dwv(N+1:end)']; ?????
+            
+            self.Dw = Dw
+            self.Dv = Dv
+            self.a = a
             self.w = wv[:m]
             self.v = wv[m:]
             self.xi = xi
