@@ -19,7 +19,7 @@ class Inter:
     def parameterization(self,xi, yi):
         n = xi.shape[0]
         m = xi.shape[1]
-        if self.method =='NPS':
+        if self.method =='NPS': # 1
             A= np.zeros(shape=(m,m))
             for ii in range(0,m,1): # for ii =0 to m-1 with step 1; range(1,N,1)
                 for jj in range(0,m,1):
@@ -39,7 +39,7 @@ class Inter:
             self.v = wv[m:]
             self.xi = xi
         #      print(V)
-        
+        #     7
         if self.method == "MAPS" or self.method == "MAPS2":
             a = np.ones(xi.shape[0],1)
             #a = ones(size(xi,1),1);
@@ -48,9 +48,12 @@ class Inter:
                 [inter_par,a] = Scale_interpar(xi,yi,a0, lamda )
                 lamda = lamda/2.0
                 for jj in range(yi.shape[0]):
-                    
                     [inter_par,a]  = Scale_interpar( xi,yi,a, lamda); #method2 %%% DO I NEED TO INCLUDE SELF INPUT????
-    
+                     
+
+
+
+
     
     # inter_par{1}=inter_method;
     # lambda = lambda/2;
@@ -172,10 +175,9 @@ class Inter:
             Dw = []; Dv=[]
             for kk in range(n):
                 #                 b{kk} = -[dA(:,:,kk) zeros(size(V'));zeros(size(V)) zeros(n+1,n+1)]*wv; ???
-                Dwv = np.linalg.solve(A, b{kk} )  # Dwv = pinv(A)* b{kk}; % solve the associated linear system
+            #    Dwv = np.linalg.solve(A, b{kk} )  # Dwv = pinv(A)* b{kk}; % solve the associated linear system
             # Dw = [Dw; Dwv(1:N)']; ????
             # Dv = [Dv; Dwv(N+1:end)']; ?????
-            
             self.Dw = Dw
             self.Dv = Dv
             self.a = a
@@ -254,6 +256,33 @@ class Inter:
 
 #y = v.T*np.concatenate([1, x]) + w.T*sqrt(diag(S' * S)) .^ 3
 # ###############################################################################
+      def interpolate_grad(self, x):
+          if self.method == "NPS" || self.method==1:
+             w = self.w 
+             v = self.v
+             N=x.shape[1]
+             xi = self.xi 
+             g = np.zeros((n, 1))
+             for ii in range(N):
+                 X = x-xi[:,ii]
+                 g = g + 3*w[ii]*X*np.norm(X) # ??? norm???? 
+             g = g + 3*w(ii)*X*np.norm(X)
+             return g
+
+          if self.method == "MAPS" || self.method==7:
+
+             w = self.w 
+             v = self.v
+             N=x.shape[1]
+             xi = self.xi 
+             g = np.zeros((n, 1))
+             for ii in range(N):
+                 X = x-xi[:,ii]
+                 g = g + 3*w[ii]*X*np.norm(X) # ??? norm???? 
+             g = g + 3*w(ii)*X*np.norm(X)
+#             TODO 
+
+
 # function g = interpolate_grad(x,inter_par)
 # % Calculate te interpolatated value at points x
 # % inter_par{1}=1 polyharmonic spline
@@ -288,7 +317,19 @@ class Inter:
 #     g=g+v(2:end);
 # end
 # end
-
+      def hessian(self,x):
+          n = x.shape[0]
+          if self.method =="NPS" || self.method ==1:
+             w=self.w; 
+             xi = self.xi;
+             N = x.shape[1]
+             H = np.zeors((n))
+             for ii in range(N):
+                 X = x - xi[:,ii]
+                 if np.linalg.norm(X) > 1e-5:
+                    H = H + 3*w[ii]*((X*X.T)/np.linalg.norm(X)  +  np.linalg.norm(X)*np.identity(n))
+             return H
+ 
 # ###############################################################################
 # function H = interpolate_hessian(x,inter_par)
 # n=length(x);
